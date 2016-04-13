@@ -1,0 +1,29 @@
+@import "../reindeer/reindeer.scss";
+
+@import "common/skeleton";
+@import "common/main-menu";
+@import "common/toolbar";
+@import "common/generic";
+@import "common/user";
+@import "common/task";
+@import "common/search";
+
+@import "components/buttons";
+@import "components/table";
+@import "components/calendar";
+
+@mixin social {
+  @include reindeer;
+
+  @include skeleton;
+  @include toolbar;
+  @include main-menu;
+  @include user;
+  @include task;
+  @include search;
+  @include generic;
+  
+  @include buttons;
+  @include table;
+  @include calendar;
+}

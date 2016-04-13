@@ -1,0 +1,12 @@
+@import "social";
+@import "../dashboard/dashboard";
+
+/* This file prefixes all rules with the theme name to avoid causing conflicts with other themes. */
+/* The actual styles should be defined in social.scss */
+.social {
+  @include social;
+}
+
+.social .dashboard {
+  @include dashboard;
+}

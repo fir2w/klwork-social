@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn"
+	xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+	xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
+	expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.klwork.com">
+	<process id="gather-flow" name="gather-flow"
+		isExecutable="true">
+		<startEvent id="start1" activiti:initiator="applyUserId"></startEvent>
+		<sequenceFlow id="flow1" sourceRef="start1" targetRef="publishNeed"></sequenceFlow>
+
+		<userTask id="publishNeed" name="发布需求" activiti:assignee="${applyUserId}"
+			activiti:formKey="gather-publishNeed-form" activiti:inType="out">
+		</userTask>
+		<sequenceFlow id="publishNeed-createApplication"
+			sourceRef="publishNeed" targetRef="createApplication"></sequenceFlow>
+
+		<serviceTask id="createApplication"
+			activiti:class="com.klwork.explorer.ui.business.flow.gather.CreateGatherApplicationTask" />
+	
+		<!-- 进入到子流程流程 -->
+		<sequenceFlow id="createApplication-uploadWork" sourceRef="createApplication"
+			targetRef="uploadWork">
+		</sequenceFlow>
+
+		<subProcess id="uploadWork" name="作品上传流程"
+			activiti:candidateGroups="user">
+			<multiInstanceLoopCharacteristics
+				isSequential="false">
+				<loopCardinality>1</loopCardinality>
+				<completionCondition>
+					${nrOfCompletedInstances > 1}
+				</completionCondition>
+			</multiInstanceLoopCharacteristics>
+			<startEvent id="uploadWorkStart"></startEvent>
+			<sequenceFlow id="uploadWorkStart-uploadOwnWork" sourceRef="uploadWorkStart"
+				targetRef="uploadOwnWork"></sequenceFlow>
+
+			<userTask id="uploadOwnWork" name="上传作品" activiti:formKey="gather-uploadWork-form" activiti:inType="out">
+				<extensionElements>
+					<activiti:taskListener event="create"
+						class="com.klwork.explorer.ui.business.flow.act.ActTaskAssignmentListener" />
+				</extensionElements>
+			</userTask>
+			<sequenceFlow id="uploadOwnWork-checkWork" sourceRef="uploadOwnWork"
+				targetRef="checkWork"></sequenceFlow>
+
+			<serviceTask id="checkWork" name="系统检查作品"
+				activiti:class="com.klwork.explorer.ui.business.flow.gather.UploadCheckService"></serviceTask>
+			<sequenceFlow id="checkWork-checkValidGateway"
+				sourceRef="checkWork" targetRef="checkValidGateway"></sequenceFlow>
+
+			<exclusiveGateway id="checkValidGateway"></exclusiveGateway>
+			<sequenceFlow id="checkValidGateway-uploadOwnWork" name="不通过"
+				sourceRef="checkValidGateway" targetRef="uploadOwnWork">
+				<conditionExpression xsi:type="tFormalExpression"><![CDATA[${workChecked == false}]]></conditionExpression>
+			</sequenceFlow>
+			<sequenceFlow id="checkValidGateway-uploadWorkEnd" name="通过"
+				sourceRef="checkValidGateway" targetRef="currentReviewWork">
+				<conditionExpression xsi:type="tFormalExpression"><![CDATA[${workChecked == true}]]></conditionExpression>
+			</sequenceFlow>
+
+			<serviceTask id="currentReviewWork" name="生成评审任务"
+				activiti:class="com.klwork.explorer.ui.business.flow.gather.UploadFileReviewService"></serviceTask>
+			<sequenceFlow id="currentReviewWork-gradeWorks"
+				sourceRef="currentReviewWork" targetRef="gradeWorks"></sequenceFlow>
+
+			<userTask id="gradeWorks" name="评审作品，进行备注操作"
+				activiti:candidateGroups="${gradeTeam}" activiti:formKey="gather-gradeWork-form" activiti:inType="out">
+			</userTask>
+
+			<sequenceFlow id="gradeWorks-uploadWorkEnd" sourceRef="gradeWorks"
+				targetRef="uploadWorkEnd"></sequenceFlow>
+			<endEvent id="uploadWorkEnd"></endEvent>
+		</subProcess>
+		<sequenceFlow id="uploadWork-pubWinningList" sourceRef="uploadWork"
+			targetRef="pubWinningList"></sequenceFlow>
+		
+		<!-- 可以进行邮件模板的设置 -->
+		<userTask id="pubWinningList" name="选择合适的用户名单"
+			activiti:assignee="${applyUserId}" activiti:formKey="gather-determineVictor-form" activiti:inType="out"></userTask>
+		<sequenceFlow id="pubWinningList-messageVictor"
+			sourceRef="pubWinningList" targetRef="messageVictor"></sequenceFlow>
+
+		<serviceTask id="messageVictor" name="通知选择用户"
+			activiti:class="com.klwork.explorer.ui.business.flow.gather.MessageSelectedPeopleTask"></serviceTask>
+		<sequenceFlow id="messageVictor-end" sourceRef="messageVictor"
+			targetRef="end"></sequenceFlow>
+		<endEvent id="end"></endEvent>
+	</process>
+</definitions>

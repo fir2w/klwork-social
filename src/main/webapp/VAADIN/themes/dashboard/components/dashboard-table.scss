@@ -1,0 +1,40 @@
+@mixin dashboard-table {
+	
+		
+	/* ---------------------
+   Table - default style
+   --------------------- */
+.board .v-table-row-odd, .board .v-table-row {
+ 	background-color: #414243;
+	overflow:hidden;
+	color: #fff;
+	font:12px/14px Arial, Helvetica, sans-serif;
+	/*text-align: center;*/
+}
+
+.board .v-table-row-odd.v-selected, .board .v-table-row.v-selected {
+	background: #333537;
+	color: #fff;
+	font-weight: bold;
+	text-shadow: none;
+}
+
+.board .v-table-cell-wrapper {
+	margin-top: -1px;
+	margin-bottom: -1px;
+	margin-left: 15px;
+}
+
+
+.board .v-table-row-odd .v-table-cell-content,.board .v-table-row .v-table-cell-content {
+	border: none;
+	height: 35px;
+	border-bottom: 1px solid #414243;
+}
+.board .v-table-body {
+	border: 0px;
+}
+.board .v-table-body.focused {
+	border: 0px;
+}
+}

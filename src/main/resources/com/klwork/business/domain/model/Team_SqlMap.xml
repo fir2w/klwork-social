@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<!--
+	(team) :${table.comment}
+字段:
+	id_(varchar)	:
+	own_user_(varchar)	:
+	name_(varchar)	:
+	last_update_(timestamp)	:
+	type_(bpchar)	:
+sqlMapConfig:
+	<typeAlias alias="Team" type="com.klwork.business.domain/model.Team" />
+	<mapper resource="com/klwork/business/domain/model/Team_SqlMap.xml" />
+-->
+<mapper namespace="com.klwork.business.domain.model.Team">
+
+	<!-- INSERT -->
+	<insert id="insertTeam" parameterType="com.klwork.business.domain.model.Team">
+    insert into team (
+    	id_,
+	own_user_,
+	name_,
+	last_update_,
+	type_
+	)
+    values (
+      		#{id,jdbcType=VARCHAR},
+ 		#{ownUser,jdbcType=VARCHAR},
+ 		#{name,jdbcType=VARCHAR},
+ 		#{lastUpdate,jdbcType=TIMESTAMP},
+    	#{type,jdbcType=CHAR}
+    	)
+	</insert>
+  
+	<!-- UPDATE -->
+	<update id="updateTeam" parameterType="com.klwork.business.domain.model.Team">
+    update team set
+		<if test="ownUser != null">
+ own_user_ = #{ownUser,jdbcType=VARCHAR},
+		</if>
+		<if test="name != null">
+ name_ = #{name,jdbcType=VARCHAR},
+		</if>
+		<if test="lastUpdate != null">
+ last_update_ = #{lastUpdate,jdbcType=TIMESTAMP}
+		</if>
+		<if test="type != null">
+ type_ = #{type,jdbcType=CHAR},
+		</if>
+ where id_ = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<!-- Delete -->	
+	<delete id="deleteTeam" parameterType="string">
+    delete from team where id_ = #{id}
+	</delete>
+  
+	<!-- SELECT -->
+	<select id="selectTeamById" parameterType="string" resultMap="TeamMap">
+    select * from team where id_ = #{id,jdbcType=VARCHAR}
+	</select>
+  
+	<select id="selectTeamByQueryCriteria" parameterType="com.klwork.business.domain.model.TeamQuery" resultMap="TeamMap">
+    select U.*
+		<include refid="selectTeamByQueryCriteriaSql" />
+		<if test="start !=0 or limit!=0">
+    limit #{limit} offset #{start}
+		</if>
+		<!--if test="orderBy != null">
+			  order by ${orderBy}
+			</if> -->
+	</select>
+  
+	<select id="selectTeamCountByQueryCriteria" parameterType="com.klwork.business.domain.model.TeamQuery" resultType="int">
+    select count(U.id_)
+		<include refid="selectTeamByQueryCriteriaSql" />
+	</select>
+  
+	<sql id="selectTeamByQueryCriteriaSql">
+    from team U
+    <if test="inUser != null">
+      inner join team_membership tm on tm.team_id_ = U.ID_ and tm.user_id_ = #{inUser}
+    </if>
+		<where>
+			<if test="ownUser != null">
+        AND U.own_user_ = #{ownUser}
+			</if>
+			<if test="type != null">
+        AND U.type_ = #{type}
+			</if>
+			<if test="name != null">
+        AND U.name_ = #{name}
+			</if>
+		</where>
+	</sql>
+  
+	<resultMap id="TeamMap" type="com.klwork.business.domain.model.Team">
+		<result property="id" column="id_" />
+		<result property="ownUser" column="own_user_" />
+		<result property="name" column="name_" />
+		<result property="lastUpdate" column="last_update_" />
+		<result property="type" column="type_" />
+	</resultMap>
+</mapper>
